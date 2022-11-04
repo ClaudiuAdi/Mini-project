@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Button from "../UI/Button";
 
 import Card from "../UI/Card";
@@ -6,18 +6,21 @@ import ErrorModal from "../UI/ErrorModal";
 import classes from "./AddUser.module.css";
 
 function AddUser(props) {
-  // defining the state for the 2 inputs username and age
-  const [enteredUsername, setEnteredUsername] = useState("");
-  const [enteredAge, setEnteredAge] = useState("");
+  // using refs to connect the final value of the input(when submited) to these refs
+  const nameInputRef = useRef();
+  const ageInputRef = useRef();
+
   // adding error state to be able to manage the errors
   const [error, setError] = useState();
 
   // handleing the submit event
   const addUserHandler = (event) => {
     event.preventDefault();
+    const enteredName = nameInputRef.current.value;
+    const enteredUserAge = ageInputRef.current.value;
 
     // setting the state error with different types of errors
-    if (enteredUsername.trim().length === 0 || enteredAge.trim().length === 0) {
+    if (enteredName.trim().length === 0 || enteredUserAge.trim().length === 0) {
       setError({
         title: "Invalid input",
         message: "Please enter a valid name and age (non-empty values).",
@@ -26,7 +29,7 @@ function AddUser(props) {
     }
 
     // forcing the entered age for the condition to be a number with the + cast
-    if (+enteredAge < 1) {
+    if (+enteredUserAge < 1) {
       setError({
         title: "Invalid age",
         message: "Please enter a valid age (> 0).",
@@ -35,20 +38,10 @@ function AddUser(props) {
     }
 
     // we pass the state up (we call the method form the parrent element to add a new user to the list managed in the App.js)
-    props.onAddUser(enteredUsername, enteredAge);
-    // we set the states to empty strings, but we need to add the 'value' property to the inputs for the change to be reflected in the inputs
-    setEnteredUsername("");
-    setEnteredAge("");
-  };
-
-  // function which is triggered for every keystroke in the username input element
-  const usernameChangeHandler = (event) => {
-    // setting the value through the target of the event(input for username) and the value property of the input to get the value
-    setEnteredUsername(event.target.value);
-  };
-
-  const ageChangeHandler = (event) => {
-    setEnteredAge(event.target.value);
+    props.onAddUser(enteredName, enteredUserAge);
+    // "manipulating the DOM"
+    nameInputRef.current.value = "";
+    ageInputRef.current.value = "";
   };
 
   // function that lets us change the state of error to null to be able to close the modal window
@@ -71,19 +64,9 @@ function AddUser(props) {
       <Card className={classes.input}>
         <form onSubmit={addUserHandler}>
           <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            value={enteredUsername} //this value will be reflected in the input
-            onChange={usernameChangeHandler}
-          />
+          <input id="username" type="text" ref={nameInputRef} />
           <label htmlFor="age">Age (Years)</label>
-          <input
-            id="age"
-            type="number"
-            value={enteredAge}
-            onChange={ageChangeHandler}
-          />
+          <input id="age" type="number" ref={ageInputRef} />
           <Button type="submit">Add User</Button>
         </form>
       </Card>
